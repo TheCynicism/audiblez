@@ -325,7 +325,7 @@ def concat_wavs_with_ffmpeg(chapter_files, output_folder, filename):
     wav_list_txt = Path(output_folder) / filename.replace('.epub', '_wav_list.txt')
     with open(wav_list_txt, 'w') as f:
         for wav_file in chapter_files:
-            f.write(f"file '{wav_file}'\n")
+            f.write(f"file '{Path(wav_file).resolve()}'\n")
     concat_file_path = Path(output_folder) / filename.replace('.epub', '.tmp.mp4')
     subprocess.run([
         'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', wav_list_txt,
