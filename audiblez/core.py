@@ -330,7 +330,7 @@ def concat_wavs_with_ffmpeg(chapter_files, output_folder, filename):
     subprocess.run([
         'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', wav_list_txt,
         # '-c', 'copy',
-        '-c:a',  'libfdk_aac',
+        '-c:a',  'aac',
         '-b:a',  '192k',
         concat_file_path])
     Path(wav_list_txt).unlink()
