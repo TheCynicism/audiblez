@@ -17,6 +17,7 @@ import shutil
 import subprocess
 import platform
 import re
+import functools
 from io import StringIO
 from types import SimpleNamespace
 from tabulate import tabulate
@@ -321,6 +322,17 @@ def strfdelta(tdelta, fmt='{D:02}d {H:02}h {M:02}m {S:02}s'):
     return f.format(fmt, **values)
 
 
+@functools.cache
+def pick_aac_encoder():
+    # libfdk_aac sounds better but is non-free, so most distro ffmpeg builds omit it
+    try:
+        out = subprocess.run(['ffmpeg', '-hide_banner', '-encoders'],
+                             capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return 'aac'
+    return 'libfdk_aac' if 'libfdk_aac' in out else 'aac'
+
+
 def concat_wavs_with_ffmpeg(chapter_files, output_folder, filename):
     wav_list_txt = Path(output_folder) / filename.replace('.epub', '_wav_list.txt')
     with open(wav_list_txt, 'w') as f:
@@ -330,7 +342,7 @@ def concat_wavs_with_ffmpeg(chapter_files, output_folder, filename):
     subprocess.run([
         'ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', wav_list_txt,
         # '-c', 'copy',
-        '-c:a',  'aac',
+        '-c:a',  pick_aac_encoder(),
         '-b:a',  '192k',
         concat_file_path])
     Path(wav_list_txt).unlink()
